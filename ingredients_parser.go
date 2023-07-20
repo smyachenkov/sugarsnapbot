@@ -42,7 +42,7 @@ type Ingredient struct {
 
 func (p IngredientsParser) getRecipeIngredients(text string) ([]Ingredient, error) {
 	result := []Ingredient{}
-	Logger.Info("Summarizing text {}", text)
+	Logger.Infof("Summarizing text %s", text)
 
 	resp, err := p.client.CreateChatCompletion(
 		context.Background(),
@@ -65,10 +65,10 @@ func (p IngredientsParser) getRecipeIngredients(text string) ([]Ingredient, erro
 		},
 	)
 	if err != nil {
-		Logger.Error("ChatCompletion error {}", err)
+		Logger.Errorf("ChatCompletion error %s", err.Error())
 		return result, err
 	}
-	Logger.Info("Parsed ingredients {}", resp.Choices)
+	Logger.Infof("Parsed ingredients %v", resp.Choices)
 
 	choice := resp.Choices[0]
 	if choice.Message.Content == "NO_INGREDIENTS" {
@@ -80,7 +80,7 @@ func (p IngredientsParser) getRecipeIngredients(text string) ([]Ingredient, erro
 	// skip header
 	_, err = r.Read()
 	if err != nil {
-		Logger.Error("Failed to read csv header", err)
+		Logger.Errorf("Failed to read csv header %s", err.Error())
 		return result, err
 	}
 
@@ -92,13 +92,13 @@ func (p IngredientsParser) getRecipeIngredients(text string) ([]Ingredient, erro
 			break
 		}
 		if err != nil {
-			Logger.Error("Failed to parse ingredient from row, skipping {}", record, err)
+			Logger.Errorf("Failed to parse ingredient from row %w, skipping %v", record, err)
 			continue
 		}
 
 		grams, err := strconv.ParseFloat(record[2], 64)
 		if err != nil {
-			Logger.Error("Failed to parse grams for {}", record, err)
+			Logger.Errorf("Failed to parse grams for %v", record)
 			grams = 0
 		}
 		grams = grams * 100 / 100
@@ -116,7 +116,7 @@ func (p IngredientsParser) getRecipeIngredients(text string) ([]Ingredient, erro
 	// merge same ingredients
 	for name, ingredients := range ingredientMap {
 		if len(ingredients) > 1 {
-			Logger.Info("Found multiple entries for {}, merging {}", name, ingredients)
+			Logger.Infof("Found multiple entries for %s, merging %v", name, ingredients)
 			merged := Ingredient{
 				Name:          ingredients[0].Name,
 				GenericName:   ingredients[0].GenericName,
@@ -128,7 +128,7 @@ func (p IngredientsParser) getRecipeIngredients(text string) ([]Ingredient, erro
 			for _, ing := range ingredients {
 				merged.QuantityGrams += ing.QuantityGrams
 			}
-			Logger.Info("Merge result: {}", merged)
+			Logger.Infof("Merge result: %v", merged)
 			result = append(result, merged)
 		} else {
 			result = append(result, ingredients[0])

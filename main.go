@@ -64,7 +64,7 @@ func main() {
 		// respond immediately
 		err = c.Send("Analyzing the recipe! Will come back with the result soon.")
 		if err != nil {
-			Logger.Error("Failed to send a message {}", err)
+			Logger.Errorf("Failed to send a message: %w", err)
 			return nil
 		}
 
@@ -75,7 +75,7 @@ func main() {
 				Logger.Error("Failed to analyze the recipe request, {}", err)
 				err = c.Send("Sorry, can't analyze it.")
 				if err != nil {
-					Logger.Error("Failed to send a message {}", err)
+					Logger.Errorf("Failed to send a message: %w", err)
 				}
 			}
 		}()
@@ -92,11 +92,11 @@ type RecipeNutritionCalculator struct {
 func (n RecipeNutritionCalculator) calculateRecipeCarbs(c tele.Context, text string) error {
 	ingredients, err := n.ingredientsParser.getRecipeIngredients(text)
 	if err != nil {
-		Logger.Error("Error {}", err)
+		Logger.Errorf("Error: %w", err)
 	}
 	result, err := n.nutritionChecker.getNutrition(ingredients)
 	if err != nil {
-		Logger.Error("Error {}", err)
+		Logger.Errorf("Error: %w", err)
 	}
 	respText := result.toTelegramResponse()
 	return c.Send(respText, tele.ModeMarkdownV2)

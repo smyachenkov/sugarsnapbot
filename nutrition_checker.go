@@ -118,7 +118,7 @@ func (c NutritionChecker) getNutrition(ingredients []Ingredient) (RecipeResult, 
 	}
 
 	query := strings.Join(queryParts, ", ")
-	Logger.Info("Nutritionix query: {}", query)
+	Logger.Infof("Nutritionix query: %s", query)
 
 	nutrionixResp, err := c.getNutritionixResponse(query)
 	if err != nil {
@@ -148,8 +148,8 @@ func (c NutritionChecker) getNutrition(ingredients []Ingredient) (RecipeResult, 
 		}
 	}
 
-	Logger.Info("productWeight {}", productWeight)
-	Logger.Info("productCarbs {}", productCarbs)
+	Logger.Infof("productWeight %v", productWeight)
+	Logger.Infof("productCarbs %v", productCarbs)
 
 	totalWeight := float64(0)
 	totalCarbs := float64(0)
@@ -159,8 +159,8 @@ func (c NutritionChecker) getNutrition(ingredients []Ingredient) (RecipeResult, 
 		totalCarbs += v.carbsGrams
 	}
 
-	Logger.Info("Total weight {}", totalWeight)
-	Logger.Info("Total carbs {}", totalCarbs)
+	Logger.Infof("Total weight %v", totalWeight)
+	Logger.Infof("Total carbs %v", totalCarbs)
 
 	result.total = NutritionSummary{
 		weightGrams: totalWeight,
@@ -192,7 +192,7 @@ func (r RecipeResult) toTelegramResponse() string {
 
 	response += fmt.Sprintf("\n Total weight: %s", mdFormatFloat(r.total.weightGrams))
 	response += fmt.Sprintf("\n Total carbs: %s", mdFormatFloat(r.total.carbsGrams))
-	Logger.Info("Telegram response: {}", response)
+	Logger.Infof("Telegram response: %s", response)
 	return response
 }
 
@@ -210,7 +210,7 @@ func (c NutritionChecker) getNutritionixResponse(query string) (NutrientsRespons
 	requestDTO := NutrientsRequestDTO{Query: query}
 	payload, err := json.Marshal(requestDTO)
 	if err != nil {
-		Logger.Error("Failed to marshal request DTO {}", requestDTO)
+		Logger.Errorf("Failed to marshal request DTO, %v", requestDTO)
 		return NutrientsResponseDTO{}, err
 	}
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
@@ -226,7 +226,7 @@ func (c NutritionChecker) getNutritionixResponse(query string) (NutrientsRespons
 	var result NutrientsResponseDTO
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		Logger.Error("Failed to unmarshal response body {}, {}", body, err)
+		Logger.Errorf("Failed to unmarshal response body %v, %w", body, err)
 		return NutrientsResponseDTO{}, err
 	}
 
